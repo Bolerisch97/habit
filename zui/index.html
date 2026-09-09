@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#f43f5e" />
+<title>男朋友恶行记录簿 · 云端共享版</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📕</text></svg>">
+<style>
+  :root{
+    --rose:#f43f5e; --pink:#fb7185; --deep:#9f1239;
+    --ink:#4c2533; --muted:#b08897; --line:#fbe3e9; --card:#fff;
+    --chip1:#ffe4ec; --chip2:#fff1d6; --chip3:#e3e9ff; --chip4:#e0f6e6; --chip5:#f3e6ff; --chip6:#e6f7f9;
+    --green:#16a34a; --greenbg:#e7f6ec; --amber:#b45309; --amberbg:#fdf3e0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:linear-gradient(165deg,#fff1f2 0%,#ffe4e6 40%,#fce7f3 100%);
+    min-height:100vh;color:var(--ink);padding:22px 14px 70px;
+  }
+  .app{max-width:640px;margin:0 auto;}
+
+  header{position:relative;text-align:center;margin-bottom:14px;}
+  .gear{
+    position:absolute;top:0;right:0;border:1.5px solid var(--line);background:#fff;
+    border-radius:12px;width:38px;height:38px;font-size:18px;cursor:pointer;
+    box-shadow:0 3px 10px rgba(244,63,94,.12);
+  }
+  .gear:active{transform:scale(.93);}
+  h1{margin:0;font-size:26px;letter-spacing:2px;color:var(--deep);}
+  h1 .logo{font-size:30px;}
+  .sub{margin:7px 0 0;color:var(--muted);font-size:12.5px;line-height:1.7;}
+  .sync-status{
+    display:inline-block;margin-top:10px;padding:6px 14px;border-radius:999px;
+    font-size:12px;font-weight:600;background:#fff;border:1px solid var(--line);
+  }
+  .sync-status.ok{color:var(--green);background:var(--greenbg);border-color:#cdeeda;}
+  .sync-status.warn{color:var(--amber);background:var(--amberbg);border-color:#f4e3c2;}
+  .sync-status.err{color:var(--rose);background:#ffe4e8;border-color:#f9cdd4;}
+  .sync-status.busy{color:var(--muted);}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0;}
+  .stat{background:var(--card);border-radius:18px;padding:14px 6px;text-align:center;box-shadow:0 8px 24px rgba(244,63,94,.10);}
+  .stat .num{font-size:26px;font-weight:800;color:var(--rose);line-height:1.2;}
+  .stat .num small{font-size:14px;font-weight:600;}
+  .stat .lbl{font-size:12px;color:var(--muted);margin-top:3px;}
+  .stat.now{border:2px solid var(--rose);}
+
+  .card{background:var(--card);border-radius:22px;box-shadow:0 10px 30px rgba(244,63,94,.10);padding:20px;margin-bottom:16px;}
+  .card h2{margin:0 0 14px;font-size:17px;color:var(--deep);display:flex;align-items:center;gap:8px;}
+  .card h2 .cnt{font-size:12px;color:#fff;background:var(--rose);border-radius:999px;padding:2px 9px;font-weight:600;}
+  .mode-note{
+    font-size:12px;line-height:1.7;border-radius:12px;padding:9px 12px;margin-bottom:6px;
+    background:var(--amberbg);color:var(--amber);border:1px solid #f4e3c2;
+  }
+  .mode-note b{font-weight:700;}
+
+  label{display:block;font-size:13px;font-weight:600;color:var(--deep);margin:12px 0 6px;}
+  label .req{color:var(--rose);}
+  input[type=text],textarea,input[type=datetime-local],input[type=password]{
+    width:100%;border:1.5px solid var(--line);border-radius:13px;padding:11px 12px;
+    font-size:14px;font-family:inherit;color:var(--ink);background:#fffafb;outline:none;transition:border-color .15s ease;
+  }
+  input:focus,textarea:focus{border-color:var(--pink);}
+  textarea{resize:vertical;min-height:56px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:480px){.row2{grid-template-columns:1fr;}}
+
+  .puns{display:flex;flex-wrap:wrap;gap:8px;}
+  .pun{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer;user-select:none;transition:all .12s ease;color:var(--ink);}
+  .pun:hover{transform:translateY(-1px);}
+  .pun.on{background:var(--rose);border-color:var(--rose);color:#fff;font-weight:600;}
+  .custom-add{display:flex;gap:8px;margin-top:10px;}
+  .custom-add input{flex:1;}
+  .btn{border:none;border-radius:13px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .12s ease, box-shadow .12s ease;}
+  .btn:active{transform:scale(.96);}
+  .btn-primary{background:linear-gradient(135deg,var(--rose),var(--pink));color:#fff;box-shadow:0 6px 18px rgba(244,63,94,.35);width:100%;margin-top:16px;}
+  .btn-ghost{background:#fff1f3;color:var(--rose);border:1px solid var(--line);}
+  .btn-mini{padding:7px 12px;font-size:12px;border-radius:10px;}
+  .edit-actions{display:flex;gap:10px;margin-top:16px;}
+  .edit-actions .btn-primary{flex:2;margin-top:0;}
+  .edit-actions .btn-ghost{flex:1;}
+
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .toolbar input{flex:1;}
+  .searchbox{display:flex;align-items:center;gap:8px;}
+  .searchbox input{background:#fffafb;}
+
+  .empty{text-align:center;padding:34px 12px;color:var(--muted);}
+  .empty .big{font-size:44px;margin-bottom:8px;}
+
+  .rec{border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;background:#fffdfe;}
+  .rec-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .rec-time{font-size:12px;color:var(--rose);font-weight:700;white-space:nowrap;background:#fff1f3;padding:5px 10px;border-radius:999px;}
+  .rec-ops{display:flex;gap:6px;flex-shrink:0;}
+  .op-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px 9px;font-size:13px;cursor:pointer;}
+  .op-btn:hover{background:#fff1f3;}
+  .rec-title{margin:9px 0 8px;font-size:15px;font-weight:600;line-height:1.6;word-break:break-word;}
+  .rec-title .idx{color:var(--muted);font-weight:400;font-size:12px;margin-right:6px;}
+  .rec-puns{display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{font-size:12px;border-radius:999px;padding:4px 10px;}
+  .tag.c1{background:var(--chip1);} .tag.c2{background:var(--chip2);}
+  .tag.c3{background:var(--chip3);} .tag.c4{background:var(--chip4);}
+  .tag.c5{background:var(--chip5);} .tag.c6{background:var(--chip6);}
+  .none{font-size:12px;color:var(--muted);}
+
+  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .tab{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--muted);font-weight:600;}
+  .tab.on{background:var(--rose);border-color:var(--rose);color:#fff;}
+  .stab{display:none;}
+  .stab.show{display:block;}
+
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);font-size:12px;white-space:nowrap;}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  td.big{font-weight:800;color:var(--rose);font-size:16px;white-space:nowrap;}
+  .bar-bg{background:var(--line);border-radius:999px;height:8px;min-width:60px;overflow:hidden;}
+  .bar-fg{background:linear-gradient(90deg,var(--rose),var(--pink));height:100%;border-radius:999px;}
+  .live{color:var(--rose);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:6px;white-space:nowrap;}
+
+  .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:8px;line-height:2;}
+  .footer .link{color:var(--pink);cursor:pointer;text-decoration:underline;}
+  .danger-zone{margin-top:10px;text-align:center;}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#4c2533;color:#fff;padding:11px 20px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:999;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  input[type=file]{display:none;}
+
+  /* 设置弹窗 */
+  .modal-mask{position:fixed;inset:0;background:rgba(76,37,51,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;}
+  .modal-mask[hidden]{display:none;}
+  .modal{width:100%;max-width:430px;max-height:88vh;overflow:auto;border-radius:22px;padding:20px;}
+  .modal h2{margin:0 0 4px;font-size:18px;}
+  .modal .modal-tip{font-size:12px;color:var(--muted);line-height:1.8;margin:8px 0 2px;}
+  .modal .modal-tip b{color:var(--ink);}
+  .cfg-result{font-size:12.5px;margin-top:10px;padding:9px 12px;border-radius:11px;background:#fff5f6;color:var(--muted);line-height:1.7;white-space:pre-wrap;}
+  .cfg-result.ok{background:var(--greenbg);color:var(--green);}
+  .cfg-result.err{background:#ffe4e8;color:var(--rose);}
+  .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px;}
+  .modal-actions .btn{width:100%;margin-top:0;padding:10px 6px;font-size:13px;}
+  .modal-note{font-size:11.5px;color:var(--muted);line-height:1.8;margin:12px 0 0;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="gear" id="gearBtn" title="云端设置">⚙️</button>
+    <h1><span class="logo">📕</span> 男朋友恶行记录簿</h1>
+    <p class="sub">他犯的每一笔“罪”，都逃不掉 😏　时间以你输入为准，精确到分<br>☁️ 云端共享：你记的账，他打开同一网址就能看到</p>
+    <span class="sync-status busy" id="syncStatus">正在启动…</span>
+  </header>
+
+  <div class="stats" id="statCards"></div>
+
+  <!-- 新增 / 编辑 -->
+  <section class="card">
+    <h2 id="formTitle">✍️ 记一笔恶行</h2>
+    <div class="mode-note" id="modeNote" hidden></div>
+    <label>他干了什么坏事？<span class="req">*</span></label>
+    <textarea id="fTitle" placeholder="例如：打游戏不理我、说我胖、忘记纪念日、惹我生气……"></textarea>
+    <div class="row2">
+      <div>
+        <label>发生时间（精确到分）<span class="req">*</span></label>
+        <input type="datetime-local" id="fTime" />
+      </div>
+      <div>
+        <label>他应受的惩罚<span class="req">*</span>（可多选）</label>
+        <div class="puns" id="punChips"></div>
+        <div class="custom-add">
+          <input type="text" id="fCustomPun" placeholder="自定义惩罚，如：请我喝奶茶" />
+          <button class="btn btn-mini btn-ghost" id="addPunBtn" type="button">＋添加</button>
+        </div>
+      </div>
+    </div>
+    <div class="edit-actions" id="formActions">
+      <button class="btn btn-primary" id="saveBtn" type="button">✍️ 记下这笔账</button>
+    </div>
+  </section>
+
+  <!-- 恶行清单 -->
+  <section class="card">
+    <h2>📋 恶行清单 <span class="cnt" id="listCount">0</span></h2>
+    <div class="toolbar searchbox">
+      <input type="text" id="searchInput" placeholder="🔍 搜索恶行或惩罚……" />
+      <button class="btn btn-mini btn-ghost" id="refreshBtn" title="手动刷新云端数据">🔄</button>
+    </div>
+    <div id="recList"></div>
+    <div class="danger-zone">
+      <button class="btn btn-mini btn-ghost" id="clearAllBtn" type="button">🗑️ 清空全部记录</button>
+      &nbsp;<button class="btn btn-mini btn-ghost" id="exportBtn" type="button">⬇️ 导出备份</button>
+      &nbsp;<button class="btn btn-mini btn-ghost" id="importBtn" type="button">⬆️ 导入备份</button>
+      <input type="file" id="importFile" accept=".json,application/json" />
+    </div>
+  </section>
+
+  <!-- 汇总统计 -->
+  <section class="card">
+    <h2>📊 欺负次数汇总</h2>
+    <div class="tabs" id="statTabs">
+      <button class="tab on" data-tab="week" type="button">🗓️ 按周</button>
+      <button class="tab" data-tab="month" type="button">📅 按月</button>
+      <button class="tab" data-tab="year" type="button">🗂️ 按年</button>
+      <button class="tab" data-tab="pun" type="button">⚡ 按惩罚</button>
+    </div>
+    <div class="stab show" id="tab-week"></div>
+    <div class="stab" id="tab-month"></div>
+    <div class="stab" id="tab-year"></div>
+    <div class="stab" id="tab-pun"></div>
+  </section>
+
+  <p class="footer">
+    数据保存在 GitHub 仓库的 data.json 里，网页只读它 → 男朋友打开同一网址即可看到你记的账 💕<br>
+    令牌只存在“记账人”自己的浏览器里，不会写进网页。记得定期 <span class="link" id="footExport">导出备份</span> 💾
+  </p>
+</div>
+
+<!-- 云端设置弹窗 -->
+<div class="modal-mask" id="settingsModal" hidden>
+  <div class="modal card">
+    <h2>☁️ 云端共享设置</h2>
+    <p class="modal-tip">
+      想让男朋友看到你记的账，需要把记录存进你的 <b>GitHub 仓库</b>（和网页同一个仓库）。<br>
+      ① 建好放网页的仓库（Public）<br>
+      ② 创建一个只对这个仓库有效的“令牌 Token”<br>
+      ③ 在下面填 用户名 / 仓库名 / 令牌 —— 令牌只保存在<b>你这台设备</b>，用于写入 data.json
+    </p>
+    <label>GitHub 用户名</label>
+    <input type="text" id="cfgOwner" placeholder="例如 boler2026" autocomplete="off" />
+    <label>仓库名（和网页同一个仓库）</label>
+    <input type="text" id="cfgRepo" placeholder="例如 ta-zui" autocomplete="off" />
+    <label>数据文件名（一般不用改）</label>
+    <input type="text" id="cfgPath" value="data.json" autocomplete="off" />
+    <label>令牌 Token（只存本机，不上传）</label>
+    <input type="password" id="cfgToken" placeholder="github_pat_ 或 ghp_ 开头" autocomplete="off" />
+    <div class="cfg-result" id="cfgResult"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cfgTest" type="button">🔌 测试连接</button>
+      <button class="btn btn-ghost" id="cfgPull" type="button">🔃 拉取云端</button>
+      <button class="btn btn-ghost" id="cfgPush" type="button">⬆️ 上传本机到云端</button>
+      <button class="btn btn-primary" id="cfgSave" type="button">💾 保存设置</button>
+      <button class="btn btn-ghost" id="cfgClose" type="button">关闭</button>
+    </div>
+    <p class="modal-note">阅读方（男朋友）不需要填任何东西：打开网址后网页会自动读取仓库里的 data.json。<br>令牌是 GitHub 的“钥匙”，请只粘贴在这台你信任的设备上，别发给别人、别写进网页文件。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div><script>
+(function(){
+  'use strict';
+  var LS_DATA='bf_misdeed_online_v1';
+  var LS_CFG='bf_misdeed_cfg_v1';
+  var LS_OLD='bf_misdeed_book_v1';
+  var LS_OPT='bf_misdeed_opts_v1';
+  var DEF_PUNS=['👋 打屁股','🎁 给我买礼物','🍰 请吃大餐/甜品','🧎 跪榴莲/键盘','🧹 承包家务一周','💌 写检讨书','🎤 唱情歌道歉','💐 送花','🛍️ 陪逛街买单','🤗 抱抱哄我'];
+
+  var ONLINE = (location.protocol==='http:'||location.protocol==='https:');
+  var DEV = (!ONLINE) || /(^|[?&])dev=1($|[?&])/.test(location.search);
+
+  var records=loadData();
+  var customOpts=loadOpts();
+  var selected=new Set();
+  var editingId=null;
+  var activeTab='week';
+
+  var CFG=loadCfg();
+  var lastRemoteSig=null;
+  var pendingChanges=false;
+  var pushChain=Promise.resolve();
+  var busy=false;
+  var pollTimer=null;
+
+  /* ---------- 基础工具 ---------- */
+  function $(s){return document.querySelector(s);}
+  function pad(n){return String(n).padStart(2,'0');}
+  var WD=['日','一','二','三','四','五','六'];
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function escAttr(s){return esc(s).replace(/'/g,'&#39;');}
+  function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._tm);toast._tm=setTimeout(function(){t.classList.remove('show');},2400);}
+  function cfgOk(){return !!(CFG.owner&&CFG.repo&&CFG.token);}
+  function mode(){ if(DEV) return 'local'; if(!cfgOk()) return 'reader'; return 'writer'; }
+
+  /* ---------- 存储 ---------- */
+  function loadData(){
+    try{
+      var raw=localStorage.getItem(LS_DATA);
+      if(raw){var arr=JSON.parse(raw);if(Array.isArray(arr))return sanitize(arr);}
+      var old=localStorage.getItem(LS_OLD);
+      if(old){var oarr=JSON.parse(old);if(Array.isArray(oarr)&&oarr.length){var moved=sanitize(oarr);saveLocal(moved);return moved;}}
+      return [];
+    }catch(e){return [];}
+  }
+  function sanitize(arr){
+    return (Array.isArray(arr)?arr:[]).filter(function(r){return r&&r.title&&r.time;}).map(function(r){
+      return {id:typeof r.id==='string'&&r.id?r.id:uid(),title:String(r.title),time:String(r.time),puns:Array.isArray(r.puns)?r.puns.filter(function(p){return typeof p==='string'&&p;}):[]};
+    });
+  }
+  function saveLocal(arr){try{localStorage.setItem(LS_DATA,JSON.stringify(arr));}catch(e){}}
+  function loadOpts(){try{var raw=localStorage.getItem(LS_OPT);var a=raw?JSON.parse(raw):[];return Array.isArray(a)?a.filter(function(s){return typeof s==='string'&&s;}):[];}catch(e){return [];}}
+  function saveOpts(){try{localStorage.setItem(LS_OPT,JSON.stringify(customOpts));}catch(e){}}
+  function loadCfg(){
+    var def={owner:'',repo:'',path:'data.json',token:''};
+    try{var raw=localStorage.getItem(LS_CFG);if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object'){for(var k in def){if(typeof o[k]!=='undefined')def[k]=String(o[k]);}}}return def;}catch(e){return def;}
+  }
+  function saveCfg(){try{localStorage.setItem(LS_CFG,JSON.stringify(CFG));}catch(e){}}
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+
+  /* ---------- 时间工具 ---------- */
+  function parseTime(t){if(!t)return null;var d=new Date(t);return isNaN(d.getTime())?null:d;}
+  function fmtCN(t){var d=parseTime(t);if(!d)return t||'未知时间';return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes())+' 周'+WD[d.getDay()];}
+  function startOfWeek(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());var dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x;}
+  function isoWeek(d){var date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));var dayNum=date.getUTCDay()||7;date.setUTCDate(date.getUTCDate()+4-dayNum);var yearStart=new Date(Date.UTC(date.getUTCFullYear(),0,1));return Math.ceil((((date-yearStart)/86400000)+1)/7);}
+  function weekLabelOfDate(d){var monday=startOfWeek(d);var sun=new Date(monday);sun.setDate(monday.getDate()+6);return monday.getFullYear()+'年 第'+isoWeek(monday)+'周（'+(monday.getMonth()+1)+'月'+monday.getDate()+'日 – '+(sun.getMonth()+1)+'月'+sun.getDate()+'日）';}
+  function sameMonthDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+  function sameMonth(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth();}
+  function sameYear(a,b){return a.getFullYear()===b.getFullYear();}
+
+  /* ---------- 汇总统计 ---------- */
+  function computeStats(){
+    var now=new Date();var wkStart=startOfWeek(now);var wkEnd=new Date(wkStart);wkEnd.setDate(wkEnd.getDate()+7);
+    var out={week:0,month:0,year:0,total:0,byWeek:{},byMonth:{},byYear:{},byPun:{},all:records.length};
+    records.forEach(function(r){var d=parseTime(r.time);if(!d)return;out.total++;
+      if(d>=wkStart&&d<wkEnd)out.week++;
+      if(sameMonth(d,now))out.month++;
+      if(sameYear(d,now))out.year++;
+      var m=startOfWeek(d);var wkKey=m.getFullYear()+'-'+pad(m.getMonth()+1)+'-'+pad(m.getDate());
+      out.byWeek[wkKey]=(out.byWeek[wkKey]||0)+1;
+      var moKey=d.getFullYear()+'-'+pad(d.getMonth()+1);out.byMonth[moKey]=(out.byMonth[moKey]||0)+1;
+      var yrKey=String(d.getFullYear());out.byYear[yrKey]=(out.byYear[yrKey]||0)+1;
+      (r.puns||[]).forEach(function(p){out.byPun[p]=(out.byPun[p]||0)+1;});
+    });
+    return out;
+  }
+
+  /* ---------- 渲染 ---------- */
+  function renderStats(){var s=computeStats();var items=[{n:s.week,l:'本周欺负',now:true},{n:s.month,l:'本月欺负'},{n:s.year,l:'今年欺负'},{n:s.total,l:'累计恶行'}];
+    $('#statCards').innerHTML=items.map(function(it){return '<div class="stat'+(it.now?' now':'')+'"><div class="num">'+it.n+'<small> 次</small></div><div class="lbl">'+it.l+'</div></div>';}).join('');}
+
+  function renderPunChips(){
+    var all=DEF_PUNS.concat(customOpts);
+    $('#punChips').innerHTML=all.map(function(p){var on=selected.has(p);return '<span class="pun'+(on?' on':'')+'" data-pun="'+escAttr(p)+'">'+esc(p)+'</span>';}).join('')+'<span style="width:100%;font-size:11px;color:var(--muted);">至少选一项哦～</span>';
+    Array.prototype.forEach.call($('#punChips').querySelectorAll('.pun'),function(c){c.addEventListener('click',function(){var pun=c.getAttribute('data-pun');if(selected.has(pun))selected.delete(pun);else selected.add(pun);renderPunChips();});});
+  }
+
+  function renderList(){
+    var q=($('#searchInput').value||'').trim().toLowerCase();
+    var sorted=records.slice().sort(function(a,b){if(a.time===b.time)return a.id<b.id?1:-1;return a.time<b.time?1:-1;});
+    if(q){sorted=sorted.filter(function(r){var t=(r.title||'').toLowerCase();var p=(r.puns||[]).join(' ').toLowerCase();return t.indexOf(q)>=0||p.indexOf(q)>=0;});}
+    $('#listCount').textContent=records.length+' 笔';
+    var box=$('#recList');
+    if(!sorted.length){box.innerHTML='<div class="empty"><div class="big">'+(records.length?'🔍':'😌')+'</div><div>'+(records.length?'没有找到匹配的记录':'这里还没有“罪证”，记一笔吧～')+'</div></div>';return;}
+    box.innerHTML=sorted.map(function(r,idx){var puns=(r.puns||[]).map(function(p,j){return '<span class="tag c'+((j%6)+1)+'">'+esc(p)+'</span>';}).join('')||'<span class="none">未指定惩罚</span>';
+      return '<div class="rec"><div class="rec-top"><span class="rec-time">⏰ '+esc(fmtCN(r.time))+'</span><span class="rec-ops"><button class="op-btn" data-edit="'+r.id+'" title="修改">✏️</button><button class="op-btn" data-del="'+r.id+'" title="删除">🗑️</button></span></div><div class="rec-title"><span class="idx">#'+(sorted.length-idx)+'</span>'+esc(r.title)+'</div><div class="rec-puns">'+puns+'</div></div>';}).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('[data-edit]'),function(b){b.addEventListener('click',function(){startEdit(b.getAttribute('data-edit'));});});
+    Array.prototype.forEach.call(box.querySelectorAll('[data-del]'),function(b){b.addEventListener('click',function(){removeRecord(b.getAttribute('data-del'));});});
+  }
+
+  function emptyHtml(msg){return '<div class="empty"><div class="big">📭</div><div>'+msg+'</div></div>';}
+  function tableRows(keys,countFn,labelFn,liveFn){
+    if(!keys.length)return null;
+    var max=1;keys.forEach(function(k){max=Math.max(max,countFn(k));});
+    return keys.map(function(k){var w=Math.round(countFn(k)/max*100);return '<tr><td class="big">'+countFn(k)+'</td><td>'+esc(labelFn(k))+(liveFn&&liveFn(k)?'<span class="live">'+liveFn(k)+'</span>':'')+'</td><td><div class="bar-bg"><div class="bar-fg" style="width:'+w+'%"></div></div></td></tr>';}).join('');
+  }
+  function renderTabWeek(){var s=computeStats();var now=new Date();var keys=Object.keys(s.byWeek).sort().reverse();var rows=tableRows(keys,function(k){return s.byWeek[k];},function(k){var y=+k.slice(0,4),mo=+k.slice(5,7),da=+k.slice(8,10);return weekLabelOfDate(new Date(y,mo-1,da));},function(k){var y=+k.slice(0,4),mo=+k.slice(5,7),da=+k.slice(8,10);return sameMonthDay(new Date(y,mo-1,da),startOfWeek(now))?'本周':null;});$('#tab-week').innerHTML=rows?'<div class="tbl-wrap"><table><thead><tr><th>欺负次数</th><th>周（周一起始）</th><th style="width:26%">占比</th></tr></thead><tbody>'+rows+'</tbody></table></div>':emptyHtml('还没有记录，无法按周汇总');}
+  function renderTabMonth(){var s=computeStats();var now=new Date();var keys=Object.keys(s.byMonth).sort().reverse();var rows=tableRows(keys,function(k){return s.byMonth[k];},function(k){return k.slice(0,4)+'年'+ (+k.slice(5,7))+'月';},function(k){return sameMonth(new Date(+k.slice(0,4),(+k.slice(5,7))-1,1),now)?'本月':null;});$('#tab-month').innerHTML=rows?'<div class="tbl-wrap"><table><thead><tr><th>欺负次数</th><th>月份</th><th style="width:26%">占比</th></tr></thead><tbody>'+rows+'</tbody></table></div>':emptyHtml('还没有记录，无法按月汇总');}
+  function renderTabYear(){var s=computeStats();var now=new Date();var keys=Object.keys(s.byYear).sort().reverse();var rows=tableRows(keys,function(k){return s.byYear[k];},function(k){return k+'年';},function(k){return (+k===now.getFullYear())?'今年':null;});$('#tab-year').innerHTML=rows?'<div class="tbl-wrap"><table><thead><tr><th>欺负次数</th><th>年份</th><th style="width:26%">占比</th></tr></thead><tbody>'+rows+'</tbody></table></div>':emptyHtml('还没有记录，无法按年汇总');}
+  function renderTabPun(){var s=computeStats();var keys=Object.keys(s.byPun);if(!keys.length){$('#tab-pun').innerHTML=emptyHtml('还没有惩罚记录');return;}var arr=keys.map(function(k){return {p:k,n:s.byPun[k]};}).sort(function(a,b){return b.n-a.n;});var max=arr[0].n;var rows=arr.map(function(it){var w=Math.round(it.n/max*100);return '<tr><td class="big">'+it.n+'</td><td>'+esc(it.p)+'</td><td><div class="bar-bg"><div class="bar-fg" style="width:'+w+'%"></div></div></td></tr>';}).join('');$('#tab-pun').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>次数</th><th>惩罚项目（被判处）</th><th style="width:26%">占比</th></tr></thead><tbody>'+rows+'</tbody></table></div>';}
+  function renderActiveTab(){if(activeTab==='week')renderTabWeek();else if(activeTab==='month')renderTabMonth();else if(activeTab==='year')renderTabYear();else renderTabPun();}
+
+  function renderModeNote(){
+    var note=$('#modeNote');
+    if(mode()==='local'){note.hidden=false;note.innerHTML='🔒 <b>本机模式：</b>数据只保存在当前浏览器（预览用）。想让他也能看到，请部署到 GitHub 后在网址里使用，并点右上 ⚙️ 配置云端。';}
+    else if(mode()==='reader'){note.hidden=false;note.innerHTML='👀 <b>阅读模式：</b>你正在看云端 data.json 的内容。想记账？点右上 ⚙️，填入你的 GitHub 用户名 / 仓库名 / 令牌（只存本机），就能写入了。';}
+    else{note.hidden=true;}
+  }
+  function renderStatus(text,cls){var el=$('#syncStatus');el.textContent=text;el.className='sync-status '+(cls||'busy');}
+
+  function renderAll(){renderStats();renderList();renderActiveTab();renderModeNote();}  /* ---------- 云端：GitHub data.json ---------- */
+  function dataFileUrl(){
+    var p=location.pathname;var dir=p.substring(0,p.lastIndexOf('/')+1);
+    var base=location.origin+dir+(CFG.path||'data.json');
+    return base+(base.indexOf('?')>=0?'&':'?')+'t='+Date.now();
+  }
+  function encPath(p){return String(p).split('/').filter(function(s){return s!=='';}).map(encodeURIComponent).join('/');}
+  function githubFilePath(){var pn=location.pathname;var dir=pn.substring(0,pn.lastIndexOf('/')+1);var repo=CFG.repo;if(repo){var prefix='/'+repo+'/';if(dir.indexOf(prefix)===0){dir=dir.substring(prefix.length);}else{dir='';}}return dir+(CFG.path||'data.json');}
+  function apiBase(){return 'https://api.github.com/repos/'+encodeURIComponent(CFG.owner)+'/'+encodeURIComponent(CFG.repo)+'/contents/'+encPath(githubFilePath());}
+  function utf8ToB64(str){var bytes=new TextEncoder().encode(str);var bin='';var CH=0x8000;for(var i=0;i<bytes.length;i+=CH){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH));}return btoa(bin);}
+  function b64ToUtf8(b64){var bin=atob(String(b64).replace(/\s/g,''));var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder().decode(bytes);}
+
+  function normalizeRemote(obj){
+    var arr=obj&&obj.records;
+    return {updatedAt:(obj&&obj.updatedAt)||'',records:sanitize(arr)};
+  }
+  // 读取同仓库 data.json（同源，无需令牌）
+  function readRemoteFile(){
+    return fetch(dataFileUrl(),{cache:'no-store'}).then(function(res){
+      if(res.status===404)return {exists:false,data:null};
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      return res.json().then(function(j){return {exists:true,data:j};});
+    });
+  }
+  // 通过 GitHub API 写入 data.json（需要令牌）
+  function pushToGithub(){
+    if(!cfgOk())return Promise.reject(new Error('未配置令牌'));
+    var payload={app:'男友恶行记录簿',updatedAt:new Date().toISOString(),records:records};
+    var headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+CFG.token,'Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'};
+    var body=JSON.stringify({message:'更新恶行记录 '+new Date().toLocaleString(),content:utf8ToB64(JSON.stringify(payload))});
+    return fetch(apiBase(),{method:'GET',headers:headers}).then(function(res){
+      return res.json().then(function(j){
+        var sha=(j&&j.sha)||null;
+        if(!sha&&res.status!==404)throw new Error((j&&j.message)||('GitHub 返回 '+res.status));
+        var finalBody=body;
+        if(sha){var o=JSON.parse(body);o.sha=sha;finalBody=JSON.stringify(o);}
+        return fetch(apiBase(),{method:'PUT',headers:headers,body:finalBody}).then(function(r2){
+          return r2.json().then(function(j2){
+            if(r2.status>=200&&r2.status<300)return {ok:true};
+            throw new Error((j2&&j2.message)||('GitHub 返回 '+r2.status));
+          });
+        });
+      });
+    });
+  }
+
+  function setStatusByMode(extra){
+    var m=mode();
+    if(m==='local'){renderStatus('🔒 本机模式 · 未连接云端','warn');}
+    else if(m==='reader'){renderStatus('☁️ 已连接云端（阅读模式，每15秒自动刷新）'+(extra?' · '+extra:''),'ok');}
+    else{renderStatus('☁️ 已连接云端（记录会同步到 GitHub）'+(extra?' · '+extra:''),'ok');}
+  }
+
+  function adopt(remoteRecs,remoteUpdatedAt,quiet){
+    records=remoteRecs;saveLocal(records);lastRemoteSig=JSON.stringify(records);
+    if(!quiet){renderAll();}
+  }
+
+  function cloudPull(quiet){
+    return readRemoteFile().then(function(res){
+      if(res.exists&&res.data){
+        var n=normalizeRemote(res.data);
+        var sig=JSON.stringify(n.records);
+        if(!quiet||sig!==lastRemoteSig){adopt(n.records,n.updatedAt,quiet);}
+        return {found:true,count:n.records.length,updatedAt:n.updatedAt};
+      }
+      return {found:false,count:0,updatedAt:''};
+    });
+  }
+
+  function queuePush(fromUser){
+    if(busy&&fromUser){toast('正在同步中，请稍候…');return Promise.resolve();}
+    pendingChanges=true;
+    var task=pushChain.then(function(){
+      busy=true;
+      return pushToGithub().then(function(r){
+        pendingChanges=false;lastRemoteSig=JSON.stringify(records);
+        if(fromUser)toast('☁️ 已同步到 GitHub，他刷新就能看到 ✓');
+        return r;
+      }).catch(function(e){
+        pendingChanges=false;
+        if(fromUser){toast('❌ 同步失败：'+e.message);}
+        else{renderStatus('⚠️ 同步失败：'+e.message,'err');}
+        throw e;
+      }).then(function(r){busy=false;return r;},function(e){busy=false;throw e;});
+    });
+    pushChain=task.catch(function(){}); // 队列继续
+    return task;
+  }
+
+  function pollCloud(){
+    if(pendingChanges||busy)return;
+    cloudPull(true).then(function(res){
+      if(mode()==='reader'){renderStatus('☁️ 已连接云端（阅读模式） · 最后更新 '+shortTime(res.updatedAt),'ok');}
+      else if(mode()==='writer'){setStatusByMode('最后更新 '+shortTime(res.updatedAt));}
+      renderAll();
+    }).catch(function(e){
+      if(mode()!=='local')renderStatus('⚠️ 云端读取失败：'+e.message,'err');
+    });
+  }
+  function shortTime(iso){
+    if(!iso)return '—';
+    var d=new Date(iso);if(isNaN(d.getTime()))return '—';
+    return (d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes());
+  }  /* ---------- 操作 ---------- */
+  function nowLocalInput(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16);}
+
+  function ensureCanWrite(){
+    var m=mode();
+    if(m==='local'||m==='writer')return true;
+    toast('阅读模式不能记账：请先点右上 ⚙️ 配置你的令牌');
+    openSettings();
+    return false;
+  }
+  function afterMutate(fromUser){
+    saveLocal(records);renderAll();
+    var m=mode();
+    if(m==='writer'){queuePush(fromUser!==false);}
+    else{renderStatus('🔒 本机模式 · 未连接云端','warn');}
+  }
+
+  function addRecord(){
+    if(!ensureCanWrite())return;
+    var title=$('#fTitle').value.trim();var time=$('#fTime').value;
+    if(!title){toast('请先写一下他干了什么坏事 😤');$('#fTitle').focus();return;}
+    if(!time){toast('请选择发生时间（精确到分）⏰');$('#fTime').focus();return;}
+    if(!parseTime(time)){toast('时间格式不对，请重新选择');return;}
+    var puns=Array.from(selected);
+    if(!puns.length){toast('至少给他选一项惩罚，别便宜了他！👋');return;}
+    records.push({id:uid(),title:title,time:time,puns:puns});
+    resetForm();afterMutate(true);
+    toast('✍️ 已记下！这笔账他跑不掉了～');
+  }
+
+  function startEdit(id){
+    var r=records.find(function(x){return x.id===id;});if(!r)return;
+    editingId=id;selected=new Set(r.puns||[]);
+    $('#fTitle').value=r.title;$('#fTime').value=r.time;
+    $('#formTitle').textContent='✏️ 修改这笔恶行';
+    $('#formActions').innerHTML='<button class="btn btn-primary" id="saveEditBtn" type="button">💾 保存修改</button><button class="btn btn-ghost" id="cancelEditBtn" type="button">取消</button>';
+    $('#saveEditBtn').addEventListener('click',function(){saveEdit();});
+    $('#cancelEditBtn').addEventListener('click',function(){resetForm();});
+    renderPunChips();window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function saveEdit(){
+    if(!ensureCanWrite())return;
+    var title=$('#fTitle').value.trim();var time=$('#fTime').value;
+    if(!title){toast('请写一下他干了什么坏事 😤');return;}
+    if(!time){toast('请选择发生时间');return;}
+    if(!parseTime(time)){toast('时间格式不对');return;}
+    var puns=Array.from(selected);if(!puns.length){toast('至少给他选一项惩罚！👋');return;}
+    var r=records.find(function(x){return x.id===editingId;});if(!r)return;
+    r.title=title;r.time=time;r.puns=puns;
+    resetForm();afterMutate(true);toast('💾 修改成功！');
+  }
+  function removeRecord(id){
+    if(!ensureCanWrite())return;
+    var r=records.find(function(x){return x.id===id;});if(!r)return;
+    if(!confirm('确定删除这条：\n「'+r.title+'」\n（'+fmtCN(r.time)+'）吗？'))return;
+    records=records.filter(function(x){return x.id!==id;});
+    if(editingId===id)resetForm();
+    afterMutate(true);toast('已删除这笔记录');
+  }
+  function clearAll(){
+    if(!records.length){toast('还没有记录可清空哦');return;}
+    if(!confirm('真的要清空全部 '+records.length+' 笔恶行记录吗？'))return;
+    if(!confirm('再确认一次：删除后无法恢复，确定吗？⚠️'))return;
+    records=[];resetForm();afterMutate(true);toast('已清空（他暂时自由了😌）');
+  }
+  function resetForm(){
+    editingId=null;selected=new Set();
+    $('#fTitle').value='';$('#fTime').value=nowLocalInput();$('#fCustomPun').value='';
+    $('#formTitle').textContent='✍️ 记一笔恶行';
+    $('#formActions').innerHTML='<button class="btn btn-primary" id="saveBtn" type="button">✍️ 记下这笔账</button>';
+    $('#saveBtn').addEventListener('click',addRecord);
+    renderPunChips();
+  }
+  function addCustomPun(){
+    var v=$('#fCustomPun').value.trim();if(!v){toast('先输入自定义惩罚内容');return;}
+    if(DEF_PUNS.indexOf(v)>=0||customOpts.indexOf(v)>=0){selected.add(v);$('#fCustomPun').value='';renderPunChips();toast('已选择该惩罚');return;}
+    customOpts.push(v);saveOpts();selected.add(v);$('#fCustomPun').value='';renderPunChips();toast('已添加并选择：'+v);
+  }
+
+  /* ---------- 导入导出 ---------- */
+  function exportData(){
+    if(!records.length){toast('还没有记录可导出');return;}
+    var payload={app:'男友恶行记录簿',exportedAt:new Date().toISOString(),records:records};
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');var d=new Date();
+    a.href=url;a.download='男友恶行记录备份_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);toast('⬇️ 备份已导出');
+  }
+  function importData(file){
+    if(!ensureCanWrite())return;
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var obj=JSON.parse(reader.result);
+        var arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.records)?obj.records:null);
+        if(!arr)throw new Error('bad');
+        var valid=sanitize(arr);
+        var ids={};records.forEach(function(r){ids[r.id]=true;});
+        var added=0;
+        valid.forEach(function(r){if(!ids[r.id]){ids[r.id]=true;records.push(r);added++;}});
+        afterMutate(true);
+        toast(added?('⬆️ 成功导入 '+added+' 笔记录'):'没有可导入的新记录（可能已存在）');
+      }catch(e){toast('导入失败：文件格式不正确');}
+    };
+    reader.readAsText(file);
+  }  /* ---------- 设置弹窗 ---------- */
+  function openSettings(){
+    $('#cfgOwner').value=CFG.owner;$('#cfgRepo').value=CFG.repo;$('#cfgPath').value=CFG.path||'data.json';$('#cfgToken').value=CFG.token;
+    var r=$('#cfgResult');r.textContent='';r.className='cfg-result';
+    $('#settingsModal').hidden=false;
+  }
+  function closeSettings(){$('#settingsModal').hidden=true;}
+  function readCfgFromInputs(){
+    CFG.owner=$('#cfgOwner').value.trim();CFG.repo=$('#cfgRepo').value.trim();CFG.path=($('#cfgPath').value.trim()||'data.json');CFG.token=$('#cfgToken').value.trim();
+  }
+  function cfgResult(msg,cls){var r=$('#cfgResult');r.textContent=msg;r.className='cfg-result '+(cls||'');}
+  function testConnection(){
+    readCfgFromInputs();
+    if(!CFG.owner||!CFG.repo){cfgResult('请先填写 GitHub 用户名和仓库名。','err');return;}
+    if(!CFG.token){cfgResult('请先粘贴令牌 Token。','err');return;}
+    cfgResult('正在测试连接…','');
+    var headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+CFG.token,'X-GitHub-Api-Version':'2022-11-28'};
+    fetch('https://api.github.com/repos/'+encodeURIComponent(CFG.owner)+'/'+encodeURIComponent(CFG.repo),{headers:headers}).then(function(res){
+      return res.json().then(function(j){
+        if(res.status===200){
+          return fetch('https://api.github.com/repos/'+encodeURIComponent(CFG.owner)+'/'+encodeURIComponent(CFG.repo)+'/contents/'+encPath(githubFilePath()),{headers:headers}).then(function(r2){
+            return r2.json().then(function(j2){
+              if(r2.status===200){cfgResult('✅ 连接成功！仓库和 data.json 都能读写。\n记得点「保存设置」。','ok');}
+              else if(r2.status===404){cfgResult('✅ 连接成功！仓库存在；data.json 还没创建（第一次记账时会自动创建）。\n记得点「保存设置」。','ok');}
+              else{cfgResult('仓库可访问，但 data.json 读取异常：'+(j2&&j2.message||r2.status),'err');}
+            });
+          });
+        }
+        if(res.status===401||res.status===403){cfgResult('❌ 令牌无效或权限不足：'+(j.message||res.status)+'\n请确认令牌已勾选该仓库的 Contents 读写权限。','err');}
+        else if(res.status===404){cfgResult('❌ 找不到这个仓库：请检查用户名 / 仓库名是否拼写正确，仓库需为 Public。','err');}
+        else{cfgResult('❌ 连接失败：'+(j.message||res.status),'err');}
+      });
+    }).catch(function(e){cfgResult('❌ 无法连接 GitHub：'+e.message+'（检查网络）','err');});
+  }
+
+  /* ---------- 事件 ---------- */
+  function bindEvents(){
+    $('#gearBtn').addEventListener('click',openSettings);
+    $('#cfgClose').addEventListener('click',closeSettings);
+    $('#settingsModal').addEventListener('click',function(e){if(e.target===$('#settingsModal'))closeSettings();});
+    $('#cfgTest').addEventListener('click',testConnection);
+    $('#cfgSave').addEventListener('click',function(){
+      readCfgFromInputs();saveCfg();closeSettings();
+      if(cfgOk()){setStatusByMode();toast('设置已保存 ☁️');}
+      else{renderStatus('⚙️ 尚未配置云端，当前为'+(DEV?'本机':'只读')+'模式','warn');}
+    });
+    $('#cfgPush').addEventListener('click',function(){
+      readCfgFromInputs();saveCfg();
+      if(!cfgOk()){cfgResult('请先填写用户名 / 仓库名 / 令牌。','err');return;}
+      cfgResult('正在把本机 '+records.length+' 笔记录合并上传…','');
+      var local=records.slice();
+      cloudPull(true).then(function(res){
+        var merged=local.slice();
+        var ids={};merged.forEach(function(r){ids[r.id]=true;});
+        (res.records||[]).forEach(function(r){if(!ids[r.id]){ids[r.id]=true;merged.push(r);}});
+        records=merged;saveLocal(records);
+        return queuePush(true).then(function(){
+          cfgResult('✅ 已上传云端，共 '+merged.length+' 笔（云端 '+res.count+' 笔 + 本机 '+local.length+' 笔，自动合并去重）。','ok');
+          renderAll();
+        });
+      }).catch(function(e){cfgResult('❌ 上传失败：'+e.message,'err');});
+    });
+    $('#cfgPull').addEventListener('click',function(){
+      cfgResult('正在拉取云端数据…','');
+      cloudPull(false).then(function(res){cfgResult('✅ 已拉取：云端共 '+res.count+' 笔记录。','ok');setStatusByMode('最后更新 '+shortTime(res.updatedAt));}).catch(function(e){cfgResult('❌ 拉取失败：'+e.message,'err');});
+    });
+    $('#saveBtn').addEventListener('click',addRecord);
+    $('#addPunBtn').addEventListener('click',addCustomPun);
+    $('#fCustomPun').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addCustomPun();}});
+    $('#searchInput').addEventListener('input',renderList);
+    $('#refreshBtn').addEventListener('click',function(){renderStatus('正在刷新云端…','busy');pollCloud();});
+    $('#clearAllBtn').addEventListener('click',clearAll);
+    $('#exportBtn').addEventListener('click',exportData);
+    $('#footExport').addEventListener('click',exportData);
+    $('#importBtn').addEventListener('click',function(){$('#importFile').click();});
+    $('#importFile').addEventListener('change',function(e){if(e.target.files&&e.target.files[0])importData(e.target.files[0]);e.target.value='';});
+    Array.prototype.forEach.call(document.querySelectorAll('#statTabs .tab'),function(t){t.addEventListener('click',function(){Array.prototype.forEach.call(document.querySelectorAll('#statTabs .tab'),function(x){x.classList.remove('on');});t.classList.add('on');activeTab=t.getAttribute('data-tab');Array.prototype.forEach.call(document.querySelectorAll('.stab'),function(x){x.classList.remove('show');});$('#tab-'+activeTab).classList.add('show');renderActiveTab();});});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden&&ONLINE&&!DEV&&!pendingChanges){pollCloud();}});
+  }
+
+  /* ---------- 启动 ---------- */
+  function init(){
+    $('#fTime').value=nowLocalInput();
+    bindEvents();
+    renderPunChips();
+    renderAll();
+    if(DEV){
+      renderStatus('🔒 本机模式 · 未连接云端（双击预览 / ?dev=1）','warn');
+      return;
+    }
+    renderStatus('正在连接云端…','busy');
+    cloudPull(true).then(function(res){
+      if(mode()==='writer'){setStatusByMode('最后更新 '+shortTime(res.updatedAt));}
+      else{renderStatus('☁️ 已连接云端（阅读模式） · 最后更新 '+shortTime(res.updatedAt),'ok');}
+      renderAll();
+    }).catch(function(e){
+      renderStatus('⚠️ 云端读取失败：'+e.message,'err');
+      renderAll();
+    });
+    var interval=(mode()==='reader')?15000:30000;
+    pollTimer=setInterval(pollCloud,interval);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
